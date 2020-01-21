@@ -20,9 +20,9 @@ Just keep in mind that there is no intention to ensure compatability with Node <
 # Instructions
 To install:
 
-1. Clone to a location somewhere and `npm install --production`. If you want to develop and rebuild javascript and other files utilize `npm install` instead.
+1. Clone to a location somewhere and then `cd app` and `npm install --production`. If you want to develop and rebuild javascript and other files utilize `npm install` instead.
 
-2. If desired, edit config.json to change the listener to your liking. There are also some default options which may be definied for a few of the variables.
+2. If desired, edit app/config.json to change the listener to your liking. There are also some default options which may be definied for a few of the variables.
 
 3. Run `npm start`
 
@@ -35,23 +35,32 @@ You will be prompted for credentials to use on the SSH server via HTTP Basic aut
 
 # Docker Instructions
 
-Modify config.json
+Copy app/config.json.template to app/config.json and modify the latter:
 
-```json
+```js
 {
+  // ...
   "listen": {
     "ip": "0.0.0.0",
     "port": 2222
   }
+  // ...
 }
 ```
 
-Build and run
+Rebuild and run
 
 ```bash
 docker build -t webssh2 .
 docker run --name webssh2 -d -p 2222:2222 webssh2
 ```
+
+Alternatively if you don't want to rebuild, mount the config at runtime:
+
+```bash
+docker run --name webssh2 -d -p 2222:2222 -v `pwd`/app/config.json:/usr/src/config.json webssh2
+```
+
 
 # Options
 
@@ -102,6 +111,8 @@ docker run --name webssh2 -d -p 2222:2222 webssh2
 
 * **ssh.keepaliveCountMax** - _integer_ - How many consecutive, unanswered SSH-level keepalive packets that can be sent to the server before disconnection (similar to OpenSSH's ServerAliveCountMax config option). **Default:** 10.
 
+* **allowedSubnets** - _array_ - A list of subnets that the server is allowed to connect to via SSH. An empty array means all subnets are permitted; no restriction. **Default:** empty array.
+
 * **terminal.cursorBlink** - _boolean_ - Cursor blinks (true), does not (false) **Default:** true.
 
 * **terminal.scrollback** - _integer_ - Lines in the scrollback buffer. **Default:** 10000.
@@ -124,91 +135,90 @@ docker run --name webssh2 -d -p 2222:2222 webssh2
 
 * **algorithms** - _object_ - This option allows you to explicitly override the default transport layer algorithms used for the connection. Each value must be an array of valid algorithms for that category. The order of the algorithms in the arrays are important, with the most favorable being first. Valid keys:
 
-  * **kex** - _array_ - Key exchange algorithms.
+    * **kex** - _array_ - Key exchange algorithms.
 
-    * Default values:
+        * Default values:
 
-      1. ecdh-sha2-nistp256
-      2. ecdh-sha2-nistp384
-      3. ecdh-sha2-nistp521
-      4. diffie-hellman-group-exchange-sha256
-      5. diffie-hellman-group14-sha1
+            1. ecdh-sha2-nistp256 **(node v0.11.14 or newer)**
+            2. ecdh-sha2-nistp384 **(node v0.11.14 or newer)**
+            3. ecdh-sha2-nistp521 **(node v0.11.14 or newer)**
+            4. diffie-hellman-group-exchange-sha256 **(node v0.11.12 or newer)**
+            5. diffie-hellman-group14-sha1
 
-    * Supported values:
+        * Supported values:
 
-      * ecdh-sha2-nistp256
-      * ecdh-sha2-nistp384
-      * ecdh-sha2-nistp521
-      * diffie-hellman-group-exchange-sha256
-      * diffie-hellman-group14-sha1
-      * diffie-hellman-group-exchange-sha1
-      * diffie-hellman-group1-sha1
+            * ecdh-sha2-nistp256 **(node v0.11.14 or newer)**
+            * ecdh-sha2-nistp384 **(node v0.11.14 or newer)**
+            * ecdh-sha2-nistp521 **(node v0.11.14 or newer)**
+            * diffie-hellman-group-exchange-sha256 **(node v0.11.12 or newer)**
+            * diffie-hellman-group14-sha1
+            * diffie-hellman-group-exchange-sha1 **(node v0.11.12 or newer)**
+            * diffie-hellman-group1-sha1
 
-  * **cipher** - _array_ - Ciphers.
+    * **cipher** - _array_ - Ciphers.
 
-    * Default values:
+        * Default values:
 
-      1. aes128-ctr
-      2. aes192-ctr
-      3. aes256-ctr
-      4. aes128-gcm
-      5. aes128-gcm@openssh.com
-      6. aes256-gcm
-      7. aes256-gcm@openssh.com
-      8. aes256-cbc **legacy cipher for backward compatibility, should removed :+1:**
+            1. aes128-ctr
+            2. aes192-ctr
+            3. aes256-ctr
+            4. aes128-gcm **(node v0.11.12 or newer)**
+            5. aes128-gcm@openssh.com **(node v0.11.12 or newer)**
+            6. aes256-gcm **(node v0.11.12 or newer)**
+            7. aes256-gcm@openssh.com **(node v0.11.12 or newer)**
 
-    * Supported values:
+        * Supported values:
 
-      * aes128-ctr
-      * aes192-ctr
-      * aes256-ctr
-      * aes128-gcm
-      * aes128-gcm@openssh.com
-      * aes256-gcm
-      * aes256-gcm@openssh.com
-      * aes256-cbc
-      * aes192-cbc
-      * aes128-cbc
-      * blowfish-cbc
-      * 3des-cbc
-      * arcfour256
-      * arcfour128
-      * cast128-cbc
-      * arcfour
+            * aes128-ctr
+            * aes192-ctr
+            * aes256-ctr
+            * aes128-gcm **(node v0.11.12 or newer)**
+            * aes128-gcm@openssh.com **(node v0.11.12 or newer)**
+            * aes256-gcm **(node v0.11.12 or newer)**
+            * aes256-gcm@openssh.com **(node v0.11.12 or newer)**
+            * aes256-cbc
+            * aes192-cbc
+            * aes128-cbc
+            * blowfish-cbc
+            * 3des-cbc
+            * arcfour256
+            * arcfour128
+            * cast128-cbc
+            * arcfour
 
-  * **hmac** - _array_ - (H)MAC algorithms.
+    * **hmac** - _array_ - (H)MAC algorithms.
 
-    * Default values:
+        * Default values:
 
-      1. hmac-sha2-256
-      2. hmac-sha2-512
-      3. hmac-sha1 **legacy hmac for backward compatibility, should removed :+1:**
+            1. hmac-sha2-256
+            2. hmac-sha2-512
+            3. hmac-sha1
 
-    * Supported values:
+        * Supported values:
 
-      * hmac-sha2-256
-      * hmac-sha2-512
-      * hmac-sha1
-      * hmac-md5
-      * hmac-sha2-256-96
-      * hmac-sha2-512-96
-      * hmac-ripemd160
-      * hmac-sha1-96
-      * hmac-md5-96
+            * hmac-sha2-256
+            * hmac-sha2-512
+            * hmac-sha1
+            * hmac-md5
+            * hmac-sha2-256-96
+            * hmac-sha2-512-96
+            * hmac-ripemd160
+            * hmac-sha1-96
+            * hmac-md5-96
 
-  * **compress** - _array_ - Compression algorithms.
+    * **compress** - _array_ - Compression algorithms.
 
-    * Default values:
+        * Default values:
 
-      1. none
-      2. zlib@openssh.com
-      3. zlib
+            1. none
+            2. zlib@openssh.com
+            3. zlib
 
-    * Supported values:
+        * Supported values:
 
-      * none
-      * zlib@openssh.com
-      * zlib
+            * none
+            * zlib@openssh.com
+            * zlib
 
 * **serverlog.client** - _boolean_ - Enables client command logging on server log (console.log). Very simple at this point, buffers data from client until it receives a line-feed then dumps buffer to console.log with session information for tracking. Will capture anything send from client, including passwords, so use for testing only... Default: false. Example:
   * _serverlog.client: GcZDThwA4UahDiKO2gkMYd7YPIfVAEFW/mnf0NUugLMFRHhsWAAAA host: 192.168.99.80 command: ls -lat_
@@ -222,7 +232,7 @@ Clicking `Start logging` on the status bar will log all data to the client. A `D
 
 # Example:
 
-http://localhost:2222/ssh/host/192.168.1.1?port=2244&header=My%20Header&color=red
+http://localhost:2222/ssh/host/192.168.1.1?port=2244&header=My%20Header&headerBackground=red
 
 # Tips
 * If you want to add custom JavaScript to the browser client you can either modify `./src/client.html` and add a **<script>** element, modify `./src/index.js` directly, or check out `webpack.*.js` and add your custom javascript file to a task there (best option).
